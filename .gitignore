@@ -15,7 +15,7 @@ requests.egg-info/
 *.swp
 *.egg
 env/
-
+.#*.#*.#*.#*.#*.#*.#*.#*
 .workon
 
 t.py
