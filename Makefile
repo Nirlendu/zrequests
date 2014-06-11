@@ -3,6 +3,9 @@
 init:
 	pip install -r requirements.txt
 
+zmq:
+	python setup.py install
+
 test:
 	py.test
 

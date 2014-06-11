@@ -62,11 +62,11 @@ Running the modified ZMQ Adapter
 
 .. code-block:: python
 
-    $ make zmq
+    $ sudo make zmq
 
-    $ python server.py
+    $ python zmq_test/server.py
     
-    $ python python_test.py
+    $ python zmq_test/python_test.py
 
 
 
