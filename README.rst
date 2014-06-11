@@ -55,6 +55,21 @@ Features
 - HTTP(S) proxy support
 
 
+
+
+Running the modified ZMQ Adapter
+--------------------------------
+
+.. code-block:: python
+
+    $ make zmq
+
+    $ python server.py
+    
+    $ python python_test.py
+
+
+
 Installation
 ------------
 

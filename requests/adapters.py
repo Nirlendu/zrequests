@@ -11,6 +11,18 @@ and maintain connections.
 import socket
 
 from .models import Response
+
+
+
+
+
+from .zmq_models import ZMQ_Response 
+
+
+
+
+
+
 from .packages.urllib3.poolmanager import PoolManager, proxy_from_url
 from .packages.urllib3.response import HTTPResponse
 from .packages.urllib3.util import Timeout as TimeoutSauce
@@ -32,6 +44,8 @@ DEFAULT_POOLSIZE = 10
 DEFAULT_RETRIES = 0
 
 
+import zmq
+
 class BaseAdapter(object):
     """The Base Transport Adapter"""
 
@@ -43,6 +57,55 @@ class BaseAdapter(object):
 
     def close(self):
         raise NotImplementedError
+
+
+
+class ZMQAdapter(BaseAdapter):
+
+	def build_response(self,req,resp):
+
+		response=ZMQ_Response()
+		 # Fallback to None if there's no status_code, for whatever reason.
+		response.status_code = getattr(resp, 'status', None)
+
+		# Make headers case-insensitive.
+		response.headers = CaseInsensitiveDict(getattr(resp, 'headers', {}))
+
+		# Set encoding.
+		response.encoding = get_encoding_from_headers(response.headers)
+		response.raw = resp
+		#response.reason = response.raw.reason
+
+		if isinstance(req.url, bytes):
+		    response.url = req.url.decode('utf-8')
+		else:
+		    response.url = req.url
+
+		# Add new cookies from the server.
+		extract_cookies_to_jar(response.cookies, req, resp)
+
+		# Give the Response some context.
+		response.request = req
+		response.connection = self
+
+		return response
+
+
+	def send(self, request, stream=False, timeout=None, verify=True, cert=None, proxies=None):
+		context = zmq.Context()
+		sock = context.socket(zmq.REQ)
+		sock.connect('tcp://127.0.0.1:5678')
+		sock.send("hey")
+		return self.build_response(request,sock.recv())
+
+
+
+
+
+
+
+
+
 
 
 class HTTPAdapter(BaseAdapter):
