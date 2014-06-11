@@ -119,7 +119,8 @@ class ZMQAdapter(BaseAdapter):
 		sock.send("Hey ! ZMQ Dummy code is here !")		
 		poller = zmq.Poller()
 		poller.register(sock, zmq.POLLIN)
-		if poller.poll(MAX_TIME_OUT*1000): # 1s timeout in milliseconds
+		#print request.url
+		if poller.poll(MAX_TIME_OUT*1000): # 10s timeout in milliseconds
 		    	msg = sock.recv()
 			return self.build_response(request,msg)
 		else:

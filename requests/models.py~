@@ -513,7 +513,7 @@ class Response(object):
         'reason',
         'cookies',
         'elapsed',
-        'request'
+        'request',
     ]
 
     def __init__(self):

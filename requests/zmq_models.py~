@@ -45,6 +45,7 @@ CONTENT_CHUNK_SIZE = 10 * 1024
 ITER_CHUNK_SIZE = 512
 
 
+import time
 
 
 class ZMQ_Response(object):

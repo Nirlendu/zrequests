@@ -12,3 +12,4 @@ while True:
 	message = sock.recv()
 	print message
 	sock.send(message)
+#print "Echo: " + message
