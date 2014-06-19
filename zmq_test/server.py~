@@ -1,15 +1,32 @@
 import zmq
 
 # ZeroMQ Context
-context = zmq.Context()
+req_rep_context = zmq.Context()
+"""
+push_pull_context = zmq.Context()
+router_dealer_context = zmq.Context()
+pub_sub_context = zmq.Context()
+"""
+
 
 # Define the socket using the "Context"
-sock = context.socket(zmq.REP)
-sock.bind("tcp://127.0.0.1:5678")
+req_rep_sock = req_rep_context.socket(zmq.REP)
+"""
+push_pull_sock = push_pull_context.socket(zmq.PUSH)
+router_dealer_sock = router_dealer_context.socket(zmq.DEALER)
+pub_sub_sock = pub_sub_context.socket(zmq.PUB)
+"""
+
+
+req_rep_sock.bind("ip://127.0.0.1:5678")
+"""
+push_pull_sock()
+router_dealer_sock()
+pub_sub_sock()
+"""
 
 # Run a simple "Echo" server
 while True:
-	message = sock.recv()
+	message = req_rep_sock.recv()
 	print message
-	sock.send(message)
-#print "Echo: " + message
+	req_rep_sock.send(message)
