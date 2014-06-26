@@ -91,6 +91,7 @@ instructions for getting the most out of Requests.
    user/install
    user/quickstart
    user/advanced
+   user/zmq
    user/authentication
 
 
