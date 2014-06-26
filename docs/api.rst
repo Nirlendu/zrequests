@@ -107,6 +107,8 @@ Classes
 .. autoclass:: requests.adapters.HTTPAdapter
    :inherited-members:
 
+.. autoclass:: requests.adapters.ZMQAdapter
+   :inherited-members:
 
 Migrating to 1.x
 ----------------
@@ -264,4 +266,3 @@ Behavioral Changes
       # One second timeout for the connection attempt
       # Another full second timeout to download the tarball
       r = requests.get(tarball_url, timeout=1)
-
