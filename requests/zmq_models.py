@@ -7,18 +7,11 @@ requests.models
 This module contains the primary objects that power Requests.
 """
 
-import collections
 import datetime
 
-from io import BytesIO, UnsupportedOperation
-from .hooks import default_hooks
 from .structures import CaseInsensitiveDict
 
-from .auth import HTTPBasicAuth
-from .cookies import cookiejar_from_dict, get_cookie_header
-from .packages.urllib3.fields import RequestField
-from .packages.urllib3.filepost import encode_multipart_formdata
-from .packages.urllib3.util import parse_url
+from .cookies import cookiejar_from_dict
 from .packages.urllib3.exceptions import DecodeError
 from .exceptions import (
     HTTPError, RequestException, MissingSchema, InvalidURL,
@@ -45,13 +38,8 @@ CONTENT_CHUNK_SIZE = 10 * 1024
 ITER_CHUNK_SIZE = 512
 
 
-
-
-
-
-
-
 class ZMQ_Response(object):
+
     """The :class:`Response <Response>` object, which contains a
     server's response to an HTTP request.
     """
@@ -97,6 +85,7 @@ class ZMQ_Response(object):
         #: A list of :class:`Response <Response>` objects from
         #: the history of the Request. Any redirect responses will end
         #: up here. The list is sorted from the oldest to the most recent request.
+
         self.history = []
 
         #: Textual reason of responded HTTP Status, e.g. "Not Found" or "OK".
