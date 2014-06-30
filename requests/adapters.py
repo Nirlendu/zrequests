@@ -70,35 +70,11 @@ class ZMQ_BaseAdapter(object):
 
 
 class ZMQAdapter(ZMQ_BaseAdapter):
-	"""The built-in ZMQ Adapter for py_zmq.
-
-    Provides a general-case interface for Requests sessions to contact ZMQ and
-    ZMQ urls by implementing the Transport Adapter interface. This class will
-    usually be created by the :class:`Session <Session>` class under the
-    covers.
-
-    Usage::
-
-      >>> import requests
-      >>> s = requests.Session()
-      >>> a = requests.adapters.ZMQAdapter()
-      >>> a.pattern = 'req_rep'
-      >>> s.mount('tcp://', a)
-    """
 
 	def __init__(self):
 		self.pattern=0
 
 	def build_response(self,req,resp):
-
-		"""Builds a :class:`Response <requests.Response>` object from ZMQ
-		response. This should not be called from user code, and is only exposed
-		for use when subclassing the
-		:class:`ZMQAdapter <requests.adapters.ZMQAdapter>`
-
-		:param req: The :class:`PreparedRequest <PreparedRequest>` used to generate the response.
-		:param resp: The urllib3 response object.
-		"""
 
 		response=ZMQ_Response()
 		 # Fallback to None if there's no status_code, for whatever reason.
@@ -130,18 +106,19 @@ class ZMQAdapter(ZMQ_BaseAdapter):
 		response.request = req
 		response.connection = self
 
+
+		"""
+
+		all modified codes	
+
+		"""
+		
 		response._content=resp
 
 		return response
 
 
-	def build_connection(self, url):
-		"""Returns a ZMQ connection for the given URL and messaging pattern. This should not be
-        	called from user code, and is only exposed for use when subclassing the
-        	:class:`ZMQAdapter <requests.adapters.ZMQAdapter>`.
-
-	        :param url: The URL to connect to.
-        	"""
+	def build_connection(self):
 		context = zmq.Context()
 		x=self.pattern
 		if x != 0 :
@@ -161,21 +138,13 @@ class ZMQAdapter(ZMQ_BaseAdapter):
 				raise NotImplementedError
 		else:
 			sock = context.socket(zmq.REQ)
-		sock.setsockopt(zmq.LINGER, 0)
-		sock.connect(url)
 		return sock
 
 
 	def send(self, request, stream=False, timeout=None, verify=True, cert=None, proxies=None):
-		"""Sends PreparedRequest object. Returns Response object.
-		:param request: The :class:`PreparedRequest <PreparedRequest>` being sent.
-		:param stream: (optional) Whether to stream the request content.
-		:param timeout: (optional) The timeout on the request.
-		:param verify: (optional) Whether to verify SSL certificates.
-		:param cert: (optional) Any user-provided SSL certificate to be trusted.
-		:param proxies: (optional) The proxies dictionary to apply to the request.
-		"""
-		sock= self.build_connection(request.url)
+		sock= self.build_connection()
+		sock.setsockopt(zmq.LINGER, 0)
+		sock.connect(request.url)
 		sock.send(request.body)		
 		poller = zmq.Poller()
 		poller.register(sock, zmq.POLLIN)
