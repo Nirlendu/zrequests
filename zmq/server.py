@@ -27,6 +27,6 @@ pub_sub_sock()
 
 # Run a simple "Echo" server
 while True:
-	message = req_rep_sock.recv()
-	print message
-	req_rep_sock.send(message)
+    message = req_rep_sock.recv()
+    print message
+    req_rep_sock.send(message)

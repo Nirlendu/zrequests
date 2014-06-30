@@ -150,11 +150,11 @@ class ZMQAdapter(ZMQ_BaseAdapter):
             sock.setsockopt(zmq.SWAP, self.swap)
         except:
             pass
-        return sock,context
+        return sock, context
 
 
     def send(self, request, stream=False, timeout=None, verify=True, cert=None, proxies=None):
-        sock= self.build_connection()
+        sock, context= self.build_connection()
         sock.setsockopt(zmq.LINGER, 0)
         sock.connect(request.url)
         sock.send(request.body)        
