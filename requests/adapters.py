@@ -82,7 +82,14 @@ class BaseAdapter(object):
 class ZMQAdapter(ZMQ_BaseAdapter):
 
     def __init__(self):
-        self.pattern=0
+        self.pattern = zmq.REQ
+        self.linger = 0
+        self.hwm = 10
+        self.swap = 200*2**10
+        self.json=0
+        self.pyobj=0
+        self.multipart=0
+        self.string=0
 
     def build_response(self,req,resp):
 
@@ -103,7 +110,18 @@ class ZMQAdapter(ZMQ_BaseAdapter):
         response.encoding = get_encoding_from_headers(response.headers)
         response.raw = resp
         #response.reason = response.raw.reason
-
+        try:
+            if self.json:
+                response.raw = json.loads(resp)
+                response._content = json.loads(resp)
+            if self.string:
+                response.raw = str(resp)
+                response._content = str(resp)
+            else:
+                response.raw = resp
+                response._content = resp
+        except:
+            print "Non matching response format"
         if isinstance(req.url, bytes):
             response.url = req.url.decode('utf-8')
         else:
@@ -122,25 +140,17 @@ class ZMQAdapter(ZMQ_BaseAdapter):
 
     def build_connection(self):
         context = zmq.Context()
-        x=self.pattern
-        if x != 0 :
-            if x == 'req_rep':
-                sock = context.socket(zmq.REQ)
-                return sock
-            if x == 'push_pull':
-                sock = context.socket(zmq.PUSH)
-                return sock
-            if x == 'router_dealer':
-                sock = context.socket(zmq.DEALER)
-                return sock
-            if x == 'pub_sub':
-                sock = context.socket(zmq.PUB)
-                return sock            
-            else:
-                raise NotImplementedError
-        else:
-            sock = context.socket(zmq.REQ)
-        return sock
+        sock = context.socket(self.pattern)
+        sock.setsockopt(zmq.LINGER, self.linger)
+        try:
+            sock.setsockopt(zmq.RCVHWM, self.hwm)
+        except:
+            pass
+        try:
+            sock.setsockopt(zmq.SWAP, self.swap)
+        except:
+            pass
+        return sock,context
 
 
     def send(self, request, stream=False, timeout=None, verify=True, cert=None, proxies=None):
@@ -151,17 +161,42 @@ class ZMQAdapter(ZMQ_BaseAdapter):
         poller = zmq.Poller()
         poller.register(sock, zmq.POLLIN)
         if timeout:
-            if poller.poll(timeout*1000): # 1s timeout in milliseconds
-                    msg = sock.recv()
-                return self.build_response(request,msg)
+            if poller.poll(timeout*1000):  # 1s timeout in milliseconds
+                try:
+                    if self.json:
+                        #print "i am here"
+                        msg = sock.recv_json()
+                    if self.pyobj:
+                        msg = sock.recv_pyobj()
+                    if self.string:
+                        msg = sock.recv_string()
+                    if self.multipart:
+                        msg = sock.recv_multipart()
+                    else:
+                        msg = sock.recv()
+                except:
+                        pass
+                return self.build_response(request, msg)
             else:
-                return self.build_response(request,None)
+                return self.build_response(request, None)
         else:
-            if poller.poll(MAX_TIME_OUT*1000): # 1s timeout in milliseconds
-                    msg = sock.recv()
-                return self.build_response(request,msg)
+            if poller.poll(MAX_TIME_OUT*1000):   # 1s timeout in milliseconds
+                try:
+                    if self.json:
+                        msg = sock.recv_json()
+                    if self.pyobj:
+                        msg = sock.recv_pyobj()
+                    if self.string:
+                        msg = sock.recv_string()
+                    if self.multipart:
+                        msg = sock.recv_multipart()
+                    else:
+                        msg = sock.recv()
+                except:
+                        pass
+                return self.build_response(request, msg)
             else:
-                return self.build_response(request,None)
+                return self.build_response(request, None)
 
 
 
