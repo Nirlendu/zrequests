@@ -8,10 +8,21 @@ This module contains the transport adapters that Requests uses to define
 and maintain connections.
 """
 
-import socket,time,zmq
-from .zmq_models import ZMQ_Response
+import socket
 
 from .models import Response
+
+
+
+
+
+from .zmq_models import ZMQ_Response 
+
+
+
+
+
+
 from .packages.urllib3.poolmanager import PoolManager, proxy_from_url
 from .packages.urllib3.response import HTTPResponse
 from .packages.urllib3.util import Timeout as TimeoutSauce
@@ -31,21 +42,14 @@ from .auth import _basic_auth_str
 DEFAULT_POOLBLOCK = False
 DEFAULT_POOLSIZE = 10
 DEFAULT_RETRIES = 0
+
+
+#define the max time out in seconds
 MAX_TIME_OUT=1
 
-class BaseAdapter(object):
-    """The Base Transport Adapter"""
+import zmq
 
-    def __init__(self):
-        super(BaseAdapter, self).__init__()
-
-    def send(self):
-        raise NotImplementedError
-
-    def close(self):
-        raise NotImplementedError
-
-
+import time
 
 class ZMQ_BaseAdapter(object):
     """The Base Transport Adapter"""
@@ -62,10 +66,17 @@ class ZMQ_BaseAdapter(object):
 	raise NotImplementedError
 
 
+class BaseAdapter(object):
+    """The Base Transport Adapter"""
 
+    def __init__(self):
+        super(BaseAdapter, self).__init__()
 
+    def send(self):
+        raise NotImplementedError
 
-
+    def close(self):
+        raise NotImplementedError
 
 
 
@@ -160,6 +171,7 @@ class ZMQAdapter(ZMQ_BaseAdapter):
 				return self.build_response(request,msg)
 			else:
 				return self.build_response(request,None)
+
 
 
 
