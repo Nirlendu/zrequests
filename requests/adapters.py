@@ -90,6 +90,7 @@ class ZMQAdapter(ZMQ_BaseAdapter):
         self.pyobj=0
         self.multipart=0
         self.string=0
+        self.iothreads=1
 
     def build_response(self,req,resp):
 
@@ -139,7 +140,7 @@ class ZMQAdapter(ZMQ_BaseAdapter):
 
 
     def build_connection(self):
-        context = zmq.Context()
+        context = zmq.Context(io_threads=self.iothreads)
         sock = context.socket(self.pattern)
         sock.setsockopt(zmq.LINGER, self.linger)
         try:
@@ -155,23 +156,26 @@ class ZMQAdapter(ZMQ_BaseAdapter):
 
     def send(self, request, stream=False, timeout=None, verify=True, cert=None, proxies=None):
         sock, context= self.build_connection()
+        if context.closed:
+            raise NotImplementedError
         sock.setsockopt(zmq.LINGER, 0)
         sock.connect(request.url)
-        sock.send(request.body)        
+        sock.send(request.body)
         poller = zmq.Poller()
         poller.register(sock, zmq.POLLIN)
+        msg=""
         if timeout:
             if poller.poll(timeout*1000):  # 1s timeout in milliseconds
                 try:
                     if self.json:
-                        #print "i am here"
                         msg = sock.recv_json()
                     if self.pyobj:
                         msg = sock.recv_pyobj()
                     if self.string:
                         msg = sock.recv_string()
                     if self.multipart:
-                        msg = sock.recv_multipart()
+                        while True:
+                            msg = msg + sock.recv_multipart()
                     else:
                         msg = sock.recv()
                 except:
@@ -189,7 +193,8 @@ class ZMQAdapter(ZMQ_BaseAdapter):
                     if self.string:
                         msg = sock.recv_string()
                     if self.multipart:
-                        msg = sock.recv_multipart()
+                        while True:
+                            msg = msg + sock.recv_multipart()
                     else:
                         msg = sock.recv()
                 except:
@@ -197,10 +202,6 @@ class ZMQAdapter(ZMQ_BaseAdapter):
                 return self.build_response(request, msg)
             else:
                 return self.build_response(request, None)
-
-
-
-
 
 
 
