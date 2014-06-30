@@ -63,7 +63,7 @@ class ZMQ_BaseAdapter(object):
     def close(self):
         raise NotImplementedError
     def build_connection(self):
-	raise NotImplementedError
+        raise NotImplementedError
 
 
 class BaseAdapter(object):
@@ -79,98 +79,89 @@ class BaseAdapter(object):
         raise NotImplementedError
 
 
-
 class ZMQAdapter(ZMQ_BaseAdapter):
 
-	def __init__(self):
-		self.pattern=0
+    def __init__(self):
+        self.pattern=0
 
-	def build_response(self,req,resp):
+    def build_response(self,req,resp):
 
-		response=ZMQ_Response()
-		 # Fallback to None if there's no status_code, for whatever reason.
-		#response.status_code = getattr(resp, 'status', None)
+        response=ZMQ_Response()
+         # Fallback to None if there's no status_code, for whatever reason.
+        #response.status_code = getattr(resp, 'status', None)
 
-		if resp:
-			response.status_code=200
-		else:
-			response.status_code=404
-
-
-		# Make headers case-insensitive.
-		response.headers = CaseInsensitiveDict(getattr(resp, 'headers', {}))
-
-		# Set encoding.
-		response.encoding = get_encoding_from_headers(response.headers)
-		response.raw = resp
-		#response.reason = response.raw.reason
-
-		if isinstance(req.url, bytes):
-		    response.url = req.url.decode('utf-8')
-		else:
-		    response.url = req.url
-
-		# Add new cookies from the server.
-		extract_cookies_to_jar(response.cookies, req, resp)
-
-		# Give the Response some context.
-		response.request = req
-		response.connection = self
+        if resp:
+            response.status_code=200
+        else:
+            response.status_code=404
 
 
-		"""
+        # Make headers case-insensitive.
+        response.headers = CaseInsensitiveDict(getattr(resp, 'headers', {}))
 
-		all modified codes	
+        # Set encoding.
+        response.encoding = get_encoding_from_headers(response.headers)
+        response.raw = resp
+        #response.reason = response.raw.reason
 
-		"""
-		
-		response._content=resp
+        if isinstance(req.url, bytes):
+            response.url = req.url.decode('utf-8')
+        else:
+            response.url = req.url
 
-		return response
+        # Add new cookies from the server.
+        extract_cookies_to_jar(response.cookies, req, resp)
 
+        # Give the Response some context.
+        response.request = req
+        response.connection = self
+        response._content=resp
 
-	def build_connection(self):
-		context = zmq.Context()
-		x=self.pattern
-		if x != 0 :
-			if x == 'req_rep':
-				sock = context.socket(zmq.REQ)
-				return sock
-			if x == 'push_pull':
-				sock = context.socket(zmq.PUSH)
-				return sock
-			if x == 'router_dealer':
-				sock = context.socket(zmq.DEALER)
-				return sock
-			if x == 'pub_sub':
-				sock = context.socket(zmq.PUB)
-				return sock			
-			else:
-				raise NotImplementedError
-		else:
-			sock = context.socket(zmq.REQ)
-		return sock
+        return response
 
 
-	def send(self, request, stream=False, timeout=None, verify=True, cert=None, proxies=None):
-		sock= self.build_connection()
-		sock.setsockopt(zmq.LINGER, 0)
-		sock.connect(request.url)
-		sock.send(request.body)		
-		poller = zmq.Poller()
-		poller.register(sock, zmq.POLLIN)
-		if timeout:
-			if poller.poll(timeout*1000): # 1s timeout in milliseconds
-			    	msg = sock.recv()
-				return self.build_response(request,msg)
-			else:
-				return self.build_response(request,None)
-		else:
-			if poller.poll(MAX_TIME_OUT*1000): # 1s timeout in milliseconds
-			    	msg = sock.recv()
-				return self.build_response(request,msg)
-			else:
-				return self.build_response(request,None)
+    def build_connection(self):
+        context = zmq.Context()
+        x=self.pattern
+        if x != 0 :
+            if x == 'req_rep':
+                sock = context.socket(zmq.REQ)
+                return sock
+            if x == 'push_pull':
+                sock = context.socket(zmq.PUSH)
+                return sock
+            if x == 'router_dealer':
+                sock = context.socket(zmq.DEALER)
+                return sock
+            if x == 'pub_sub':
+                sock = context.socket(zmq.PUB)
+                return sock            
+            else:
+                raise NotImplementedError
+        else:
+            sock = context.socket(zmq.REQ)
+        return sock
+
+
+    def send(self, request, stream=False, timeout=None, verify=True, cert=None, proxies=None):
+        sock= self.build_connection()
+        sock.setsockopt(zmq.LINGER, 0)
+        sock.connect(request.url)
+        sock.send(request.body)        
+        poller = zmq.Poller()
+        poller.register(sock, zmq.POLLIN)
+        if timeout:
+            if poller.poll(timeout*1000): # 1s timeout in milliseconds
+                    msg = sock.recv()
+                return self.build_response(request,msg)
+            else:
+                return self.build_response(request,None)
+        else:
+            if poller.poll(MAX_TIME_OUT*1000): # 1s timeout in milliseconds
+                    msg = sock.recv()
+                return self.build_response(request,msg)
+            else:
+                return self.build_response(request,None)
 
 
 
