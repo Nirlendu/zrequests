@@ -96,22 +96,14 @@ class ZMQAdapter(ZMQ_BaseAdapter):
     def build_response(self,req,resp):
 
         response=ZMQ_Response()
-         # Fallback to None if there's no status_code, for whatever reason.
-        #response.status_code = getattr(resp, 'status', None)
-
         if resp:
             response.status_code=200
         else:
             response.status_code=404
-
-
-        # Make headers case-insensitive.
         response.headers = CaseInsensitiveDict(getattr(resp, 'headers', {}))
 
         # Set encoding.
         response.encoding = get_encoding_from_headers(response.headers)
-        #response.raw = resp
-        #response.reason = response.raw.reason
         try:
             if self.json:
                 response.raw = json.loads(resp)
@@ -123,7 +115,8 @@ class ZMQAdapter(ZMQ_BaseAdapter):
                 response.raw = resp
                 response._content = resp
         except:
-            print "Non matching response format"
+            if resp != None:
+                print "Non matching response format"
         if isinstance(req.url, bytes):
             response.url = req.url.decode('utf-8')
         else:
