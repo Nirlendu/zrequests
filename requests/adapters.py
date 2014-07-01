@@ -9,7 +9,7 @@ and maintain connections.
 """
 
 import socket
-
+import json
 from .models import Response
 
 
@@ -91,6 +91,7 @@ class ZMQAdapter(ZMQ_BaseAdapter):
         self.multipart=0
         self.string=0
         self.iothreads=1
+        self.subscribe = 0
 
     def build_response(self,req,resp):
 
@@ -109,7 +110,7 @@ class ZMQAdapter(ZMQ_BaseAdapter):
 
         # Set encoding.
         response.encoding = get_encoding_from_headers(response.headers)
-        response.raw = resp
+        #response.raw = resp
         #response.reason = response.raw.reason
         try:
             if self.json:
@@ -144,13 +145,18 @@ class ZMQAdapter(ZMQ_BaseAdapter):
         sock = context.socket(self.pattern)
         sock.setsockopt(zmq.LINGER, self.linger)
         try:
-            sock.setsockopt(zmq.RCVHWM, self.hwm)
+            sock.set_hwm(self.hwm)
         except:
             pass
         try:
             sock.setsockopt(zmq.SWAP, self.swap)
         except:
             pass
+        if self.subscribe:
+            try:
+                sock.setsockopt(zmq.SUBSCRIBE, self.subscribe)
+            except:
+                pass
         return sock, context
 
 
