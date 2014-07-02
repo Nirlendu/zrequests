@@ -117,7 +117,7 @@ class ZMQAdapter(ZMQ_BaseAdapter):
         except:
             if resp != None:
                 print "Non matching response format"
-        response.raw = json.loads(resp)
+        response.raw = resp
         response._content=response.raw
         if isinstance(req.url, bytes):
             response.url = req.url.decode('utf-8')
