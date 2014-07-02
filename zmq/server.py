@@ -1,4 +1,7 @@
 import zmq
+from base64 import b64decode
+import json
+import rijndael
 
 def a():
     import json
@@ -8,10 +11,13 @@ def a():
     a=json.dumps(['foo', {'bar': ('baz', None, 1.0, 2)}])
     while True:
         message = req_rep_sock.recv()
-        print message
+        a=json.loads(message)
+        x=a.index('Authorization: Basic')
+        y=a.index('Content-Type:')
+        p=b64decode(a[x+21:y])
+        z=p.index(":")
+        print rijndael.decode('something',p[z+1:])
         req_rep_sock.send(message)
-        #req_rep_sock.send_string(message)
-        #req_rep_sock.send_json(a)
 
 def b():
     from random import choice

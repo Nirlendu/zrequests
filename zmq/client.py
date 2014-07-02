@@ -16,7 +16,7 @@ def a():
     adaptor.iothreads = 1
     adaptor.swap = 200*2**10
     session.mount('tcp://', adaptor)
-    resp = session.get("tcp://127.0.0.1:5678", data="test string", timeout=1, auth=HTTPBasicAuth('user', rijndael.encd('pass')))
+    resp = session.get("tcp://127.0.0.1:5678", data="test string", timeout=1, auth=HTTPBasicAuth('user', rijndael.encode('something','pass')))
     print resp.raw
 
 
