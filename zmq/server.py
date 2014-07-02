@@ -9,9 +9,9 @@ def a():
     while True:
         message = req_rep_sock.recv()
         print message
-        #req_rep_sock.send(message)
+        req_rep_sock.send(message)
         #req_rep_sock.send_string(message)
-        req_rep_sock.send_json(a)
+        #req_rep_sock.send_json(a)
 
 def b():
     from random import choice

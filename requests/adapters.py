@@ -117,6 +117,8 @@ class ZMQAdapter(ZMQ_BaseAdapter):
         except:
             if resp != None:
                 print "Non matching response format"
+        response.raw = json.loads(resp)
+        response._content=response.raw
         if isinstance(req.url, bytes):
             response.url = req.url.decode('utf-8')
         else:
@@ -128,7 +130,6 @@ class ZMQAdapter(ZMQ_BaseAdapter):
         # Give the Response some context.
         response.request = req
         response.connection = self
-        response._content=resp
 
         return response
 
@@ -153,12 +154,27 @@ class ZMQAdapter(ZMQ_BaseAdapter):
         return sock, context
 
 
+    def zwsgi(self, request, timeout):
+        x = "GET / HTTP/1.1\nHost: http://:0.0.0.0:4000\nUser-Agent: Mozilla/5.0\nAccept :text/xml, application/xml, application/xhtml+xml"
+        x=x+"Accept-Language: en-gb\nAccept-Encoding: gzip, deflate, compress\nKeep-Alive: "+str(timeout*1000)+"\nConnection: keep-alive\n"
+        try:
+            x=x+"From: Basic\nAuthorization: "+request.headers['Authorization']
+        except:
+            pass
+        x=x+"\nContent-Type: application/x-www-form-urlencoded\nContent-Length: "+str(len(request.body))+"\n"+request.body
+        #print request.__dict__
+        return json.dumps(x)
+
+
     def send(self, request, stream=False, timeout=None, verify=True, cert=None, proxies=None):
         sock, context= self.build_connection()
         if context.closed:
             raise NotImplementedError
         sock.setsockopt(zmq.LINGER, 0)
         sock.connect(request.url)
+
+        #send HTTP compliant packet
+        request.body=self.zwsgi(request, timeout)
         sock.send(request.body)
         poller = zmq.Poller()
         poller.register(sock, zmq.POLLIN)

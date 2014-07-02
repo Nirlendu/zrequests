@@ -1,4 +1,7 @@
 import requests
+from requests.auth import HTTPBasicAuth
+import rijndael
+
 import zmq
 
 def a():
@@ -6,14 +9,14 @@ def a():
     adaptor = requests.adapters.ZMQAdapter()
     #adaptor.multipart=1
     adaptor.pattern = zmq.REQ
-    adaptor.json = 1
+    adaptor.json = 0
     adaptor.string = 0
     adaptor.linger = 0
     adaptor.hwm = 1
     adaptor.iothreads = 1
     adaptor.swap = 200*2**10
     session.mount('tcp://', adaptor)
-    resp = session.get("tcp://127.0.0.1:5678", data="test string", timeout=1)
+    resp = session.get("tcp://127.0.0.1:5678", data="test string", timeout=1, auth=HTTPBasicAuth('user', rijndael.encd('pass')))
     print resp.raw
 
 
