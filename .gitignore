@@ -16,10 +16,8 @@ requests.egg-info/
 *.egg
 .*
 *~
-env/
+venv/
 .workon
-
 t.py
-
 t2.py
 dist
